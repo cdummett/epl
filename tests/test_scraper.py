@@ -42,7 +42,7 @@ class TestFbRefScraper(unittest.TestCase):
         scraper = FbRefScraper(level=logging.WARNING)
 
         expected = {'Max Aarons': '774cf58b',
-                    'Nathan AkÃ©': 'eaeca114',
+                    'Nathan Aké': 'eaeca114',
                     'Eric Bailly': 'a1232f4e',
                     'Aaron Cresswell': '4f974391'}
 
