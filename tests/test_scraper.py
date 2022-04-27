@@ -37,6 +37,20 @@ class TestFbRefScraper(unittest.TestCase):
         for squad in expected.keys():
             self.assertEqual(expected[squad], actual[squad])
 
+    def test_scrape_player_codes(self):
+        """"""
+        scraper = FbRefScraper(level=logging.WARNING)
+
+        expected = {'Max Aarons': '774cf58b',
+                    'Nathan AkÃ©': 'eaeca114',
+                    'Eric Bailly': 'a1232f4e',
+                    'Aaron Cresswell': '4f974391'}
+
+        actual = scraper.scrape_player_codes()
+
+        for squad in expected.keys():
+            self.assertEqual(expected[squad], actual[squad])
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARNING)
