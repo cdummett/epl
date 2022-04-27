@@ -57,6 +57,37 @@ class FbRefScraper:
         # Return a dictionary
         return squad_codes
 
+    def scrape_player_codes(self):
+        """
+        Scrapes a dictionary mapping player names to FbRef player codes.
+
+        Function makes a request to the url "https://fbref.com/en/comps/9/stats/Premier-League-Stats" and processes the
+        "Player Standard Stats" table into a dictionary with player names as keys and player codes as values. Player
+        codes can be used to access player stat pages (e.g. https://fbref.com/en/players/774cf58b/Max-Aarons).
+
+        Returns:
+            A dictionary mapping squad names to FbRef player codes.
+        """
+        # Logging message for function call
+        self._log.debug("'scrape_player_codes' method called.")
+
+        # Define the url to request from and the html table_id to process, then scrape the table
+        url = "https://fbref.com/en/comps/9/stats/Premier-League-Stats"
+        table_id = "stats_standard"
+        table = self._scrape_table(url=url, table_id=table_id)
+
+        # Extract the codes from the hyperlinks in the table.
+        player_codes = dict()
+        for tr in table.find_all('tr'):
+            th = tr.find('th')
+            if (th['class'] == ['left']) or (th['class'] == ['right']):
+                td = tr.find_all('td')[0]
+                a = tr.find_all('a')[0]
+                player_codes[td.text] = a['href'].split('/')[3]
+
+        # Return a dictionary
+        return player_codes
+
     def _scrape_table(self, url: str, table_id: str):
         """
         Scrapes the specified table from the specified url.
