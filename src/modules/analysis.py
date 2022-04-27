@@ -22,26 +22,30 @@ class SquadAnalysisGui:
         level at the specified level.
 
         Args:
-            level:
+            level: specifies the level of logging messages to record
         """
+        # Initalise class logger
         self._log = logging.getLogger("SquadAnalysisGui")
         self._log.setLevel(level=level)
+
+        # Logging message for function call
         self._log.debug(msg="'__init__' method called.")
 
-        self.root = tk.Tk()
-
+        # Initalise analysis figure
         self.fig = plt.figure(num=1)
         self.ax = plt.axes()
         plt.show(block=False)
 
+        # Initalise widgets
+        self.root = tk.Tk()
         self.frame_xdatacontrols = DataControlFrame(master=self.root, level=level)
         self.frame_xdatacontrols.grid(row=0, column=0)
         self.frame_ydatacontrols = DataControlFrame(master=self.root, level=level)
         self.frame_ydatacontrols.grid(row=1, column=0)
-
         self.button_update = tk.Button(master=self.root, text="Update", width=40, command=self.update)
         self.button_update.grid(row=2, column=0)
 
+        # Run app
         self.root.mainloop()
 
     def update(self):
@@ -61,7 +65,19 @@ class DataControlFrame(tk.Frame):
     """"""
 
     def __init__(self, level=logging.WARNING, **kw):
-        """"""
+        """
+        Creates an instance of the DataControlFrame class.
+
+        Function initialises an instance of the class by creating a logger matching the class name and setting the log
+        level at the specified level.
+
+        Args:
+            level: specifies the level of logging messages to record
+
+        Returns:
+            None
+
+        """
         super().__init__(**kw)
 
         # Initalise class logger
@@ -95,7 +111,21 @@ class DataControlFrame(tk.Frame):
         self.optionmenu_metric.grid(row=1, column=0)
 
     def callback_optionmenu_stat(self, *args):
-        """"""
+        """
+        Updates values in the metric OptionMenu widget when the selection in the stat OptionMenu widget is changed.
+
+        Function is called when the value of variable_stat is changed by the user. Function scrapes the dataframe for
+        the newly selected stat and updates the values of optionmenu_widget with the columns of the new dataframe.
+
+        Args:
+            *args: arguments required for callback
+
+        Returns:
+            None
+
+        """
+
+        # Function logging message
         self._log.debug(msg="'callback_optionmenu_stat' method called.")
 
         self.df = self.scraper.scrape_squad_summaries(stat=self.variable_stat.get(), vs=False)
