@@ -13,6 +13,18 @@ from bs4 import BeautifulSoup
 class FbRefScraper:
     """"""
 
+    SUMMARY_STAT_OPTS = {'stats': 'standard',
+                         'keepers': 'keeper',
+                         'keeprsadv': 'keeper_adv',
+                         'shooting': 'shooting',
+                         'passing': 'passing',
+                         'passing_types': 'passing_types',
+                         'gca': 'gca',
+                         'defense': 'defense',
+                         'possession': 'possession',
+                         'playingtime': 'playing_time',
+                         'misc': 'misc'}
+
     def __init__(self, level=logging.WARNING):
         """
         Creates an instance of the FbRefScraper class.
@@ -122,6 +134,33 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
+    def scrape_squad_summaries(self, stat: str = 'stats', vs: bool = False):
+        """
+        Scrapes a dataframe summarising each squads performance metrics for the specified category.
+
+        Function makes a request to a url (e.g. "https://fbref.com/en/comps/9/stats/Premier-League-Stats") which
+        contains the squad summaries data for the specified stat category (e.g. 'shooting'). The table containing either
+        the 'for' or 'against' data is then scraped and processed into a dataframe.
+
+        Args:
+            stat: specifies the category of performance metrics to scrape.
+            vs: specifies whether to scrape the 'for' or 'against' table.
+
+        Returns:
+            A pandas dataframe with squad names as the index and performance metrics as the columns.
+
+        """
+        # Logging message for function call
+        self._log.debug("'_scrape_squad_summaries' method called.")
+
+        # Define the url to request from and the html table_id to process, then scrape the table
+        url = f"https://fbref.com/en/comps/9/{stat}/Premier-League-Stats"
+        table_id_opts = {True: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_for",
+                         False: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_against"}
+        table = self._scrape_table(url=url, table_id=table_id_opts[vs])
+
+        # Return a dataframe
+        return self._process_table(table=table, index='squad', include_row_header=True)
 
     def _process_table(self, table, index: str = None, include_row_header: bool = False):
         """"""
