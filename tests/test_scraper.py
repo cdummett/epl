@@ -1,10 +1,13 @@
 import unittest
+import logging
+
+from modules.scraper import FbRefScraper
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)
+class TestFbRefScraper(unittest.TestCase):
+    """"""
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.WARNING)
     unittest.main()
