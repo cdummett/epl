@@ -27,6 +27,36 @@ class FbRefScraper:
         self._log.setLevel(level=level)
         self._log.debug(msg="'__init__' method called.")
 
+    def scrape_squad_codes(self):
+        """
+        Scrapes a dictionary mapping squad names to FbRef squad codes.
+
+        Function makes a request to the url "https://fbref.com/en/comps/9/stats/Premier-League-Stats" and processes the
+        "Squad Standard Stats" table into a dictionary with squad names as keys and squad codes as values. Squad codes
+        can be used to access squad stat pages (e.g. https://fbref.com/en/squads/18bb7c10/Arsenal-Stats).
+
+        Returns:
+            A dictionary mapping squad names to FbRef squad codes.
+        """
+        # Logging message for function call
+        self._log.debug("'scrape_squad_codes' method called.")
+
+        # Define the url to request from and the html table_id to process, then scrape the table
+        url = "https://fbref.com/en/comps/9/stats/Premier-League-Stats"
+        table_id = "stats_squads_standard_for"
+        table = self._scrape_table(url=url, table_id=table_id)
+
+        # Extract the codes from the hyperlinks in the table.
+        squad_codes = dict()
+        for tr in table.find_all('tr'):
+            th = tr.find('th')
+            if (th['class'] == ['left']) or (th['class'] == ['right']):
+                a = tr.find_all('a')[0]
+                squad_codes[th.text] = a['href'].split('/')[3]
+
+        # Return a dictionary
+        return squad_codes
+
     def _scrape_table(self, url: str, table_id: str):
         """
         Scrapes the specified table from the specified url.
@@ -61,6 +91,7 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
+
     def _process_table(self, table, index: str = None, include_row_header: bool = False):
         """"""
         self._log.debug("'_process_data' method called.")
@@ -81,6 +112,7 @@ class FbRefScraper:
             return pd.DataFrame(data=data_dict, index=data_dict[index]).drop(labels=[index], axis=1)
         else:
             return pd.DataFrame(data=data_dict)
+
 
 if __name__ == "__main__":
     """"""
