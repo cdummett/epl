@@ -155,8 +155,8 @@ class FbRefScraper:
 
         # Define the url to request from and the html table_id to process, then scrape the table
         url = f"https://fbref.com/en/comps/9/{stat}/Premier-League-Stats"
-        table_id_opts = {True: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_for",
-                         False: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_against"}
+        table_id_opts = {False: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_for",
+                         True: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_against"}
         table = self._scrape_table(url=url, table_id=table_id_opts[vs])
 
         # Return a dataframe
