@@ -61,6 +61,27 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
+    def _process_table(self, table, index: str = None, include_row_header: bool = False):
+        """"""
+        self._log.debug("'_process_data' method called.")
+
+        data_dict = dict()
+        for tr in table.find_all('tr'):
+            th = tr.find('th')
+            if (th['class'] == ['left']) or (th['class'] == ['right']):
+                if include_row_header:
+                    data_dict.setdefault(th['data-stat'], []).append(th.text)
+                for td in tr.find_all('td'):
+                    try:
+                        data_dict.setdefault(td['data-stat'], []).append(float(td.text))
+                    except ValueError:
+                        data_dict.setdefault(td['data-stat'], []).append(td.text)
+
+        if not isinstance(index, type(None)):
+            return pd.DataFrame(data=data_dict, index=data_dict[index]).drop(labels=[index], axis=1)
+        else:
+            return pd.DataFrame(data=data_dict)
+
 if __name__ == "__main__":
     """"""
     logging.basicConfig(level=logging.WARNING)
