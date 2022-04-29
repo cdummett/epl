@@ -14,6 +14,9 @@ from matplotlib import pyplot as plt
 class SquadAnalysisGui:
     """"""
 
+    PAD_X = 2
+    PAD_Y = 2
+
     def __init__(self, level=logging.WARNING):
         """
         Creates an instance of the SquadAnalysisGui class.
@@ -33,12 +36,12 @@ class SquadAnalysisGui:
 
         # Initialise widgets
         self.root = tk.Tk()
-        self.frame_x_data_controls = DataControlFrame(master=self.root, level=level)
-        self.frame_x_data_controls.grid(row=0, column=0)
-        self.frame_y_data_controls = DataControlFrame(master=self.root, level=level)
-        self.frame_y_data_controls.grid(row=1, column=0)
-        self.button_update = tk.Button(master=self.root, text="Update", width=40, command=self.update)
-        self.button_update.grid(row=2, column=0)
+        self.frame_x_data_controls = DataControlFrame(level=level, master=self.root, relief='groove', borderwidth=2)
+        self.frame_x_data_controls.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.frame_y_data_controls = DataControlFrame(level=level, master=self.root, relief='groove', borderwidth=2)
+        self.frame_y_data_controls.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.button_update = tk.Button(master=self.root, text="Update", width=40, command=self.update, relief='groove')
+        self.button_update.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
 
         # Initialise analysis figure
         self.fig = plt.figure(num=1)
@@ -63,6 +66,9 @@ class SquadAnalysisGui:
 
 class DataControlFrame(tk.Frame):
     """"""
+
+    PAD_X = 1
+    PAD_Y = 1
 
     def __init__(self, level=logging.WARNING, **kw):
         """
@@ -105,10 +111,10 @@ class DataControlFrame(tk.Frame):
         # Initialise the OptionMenu widgets
         self.optionmenu_stat = tk.OptionMenu(self, self.variable_stat, *self.stat_options)
         self.optionmenu_stat.config(width=40)
-        self.optionmenu_stat.grid(row=0, column=0)
+        self.optionmenu_stat.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y)
         self.optionmenu_metric = tk.OptionMenu(self, self.variable_metric, *self.metric_options)
         self.optionmenu_metric.config(width=40)
-        self.optionmenu_metric.grid(row=1, column=0)
+        self.optionmenu_metric.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
 
     def callback_optionmenu_stat(self, *args):
         """
@@ -136,6 +142,79 @@ class DataControlFrame(tk.Frame):
         for string in self.metric_options:
             self.optionmenu_metric["menu"].add_command(label=string,
                                                        command=lambda value=string: self.variable_metric.set(value))
+
+
+class OptionMenuFrame(tk.Frame):
+
+    def __init__(self, level=logging.WARNING, values=None, **kw):
+        """
+        Creates an instance of the DataControlFrame class.
+
+        Function initialises an instance of the class by creating a logger matching the class name and setting the log
+        level at the specified level.
+
+        Args:
+            level: specifies the level of logging messages to record
+
+        Returns:
+            None
+
+        """
+        super().__init__(**kw)
+
+        # Initialise class logger
+        if values is None:
+            values = ['No options']
+        self._log = logging.getLogger("DataControlFrame")
+        self._log.setLevel(level=level)
+
+        # Logging message for function call
+        self._log.debug(msg="'__init__' method called.")
+
+        self.values = values
+
+        self.variable = tk.StringVar()
+        self.variable.set(values[0])
+
+        self.button_dw = tk.Button(master=self, text='<-', command=self._button_dw)
+        self.optionmenu = tk.OptionMenu(self, self.variable, *values)
+        self.optionmenu.config(width=40)
+        self.button_up = tk.Button(master=self, text='->', command=self._button_up)
+
+        self.button_dw.grid(row=0, column=0)
+        self.optionmenu.grid(row=0, column=1)
+        self.button_up.grid(row=0, column=2)
+
+    def update_values(self, values):
+        """"""
+        # Function logging message
+        self._log.debug(msg="'callback_optionmenu_stat' method called.")
+        self.values = values
+        self.variable.set(self.values[0])
+        self.optionmenu["menu"].delete(0, "end")
+        for string in self.values:
+            self.optionmenu["menu"].add_command(label=string,
+                                                command=lambda value=string: self.variable.set(value))
+
+    def _button_dw(self):
+        """"""
+        # Logging message for function call
+        self._log.debug(msg="'button_up' method called.")
+        index = self.values.index(self.variable.get())
+        if index == 0:
+            self.variable.set(self.values[-1])
+        else:
+            self.variable.set(self.values[index - 1])
+
+    def _button_up(self):
+        """"""
+        # Logging message for function call
+        self._log.debug(msg="'button_up' method called.")
+        index = self.values.index(self.variable.get())
+        if index == len(self.values)-1:
+            self.variable.set(self.values[0])
+        else:
+            self.variable.set(self.values[index + 1])
 
 
 if __name__ == "__main__":
