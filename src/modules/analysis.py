@@ -144,7 +144,7 @@ class DataControlFrame(tk.Frame):
                                                        command=lambda value=string: self.variable_metric.set(value))
 
 
-class OptionMenuFrame(tk.Frame):
+class MenuFrame(tk.Frame):
 
     def __init__(self, level=logging.WARNING, values=None, **kw):
         """
@@ -177,12 +177,12 @@ class OptionMenuFrame(tk.Frame):
         self.variable.set(values[0])
 
         self.button_dw = tk.Button(master=self, text='<-', command=self._button_dw)
-        self.optionmenu = tk.OptionMenu(self, self.variable, *values)
-        self.optionmenu.config(width=40)
+        self.menu = tk.OptionMenu(self, self.variable, *values)
+        self.menu.config(width=40)
         self.button_up = tk.Button(master=self, text='->', command=self._button_up)
 
         self.button_dw.grid(row=0, column=0)
-        self.optionmenu.grid(row=0, column=1)
+        self.menu.grid(row=0, column=1)
         self.button_up.grid(row=0, column=2)
 
     def update_values(self, values):
@@ -191,10 +191,10 @@ class OptionMenuFrame(tk.Frame):
         self._log.debug(msg="'callback_optionmenu_stat' method called.")
         self.values = values
         self.variable.set(self.values[0])
-        self.optionmenu["menu"].delete(0, "end")
+        self.menu["menu"].delete(0, "end")
         for string in self.values:
-            self.optionmenu["menu"].add_command(label=string,
-                                                command=lambda value=string: self.variable.set(value))
+            self.menu["menu"].add_command(label=string,
+                                          command=lambda value=string: self.variable.set(value))
 
     def _button_dw(self):
         """"""
