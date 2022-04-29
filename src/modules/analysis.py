@@ -24,26 +24,26 @@ class SquadAnalysisGui:
         Args:
             level: specifies the level of logging messages to record
         """
-        # Initalise class logger
+        # Initialise class logger
         self._log = logging.getLogger("SquadAnalysisGui")
         self._log.setLevel(level=level)
 
         # Logging message for function call
         self._log.debug(msg="'__init__' method called.")
 
-        # Initalise analysis figure
+        # Initialise widgets
+        self.root = tk.Tk()
+        self.frame_x_data_controls = DataControlFrame(master=self.root, level=level)
+        self.frame_x_data_controls.grid(row=0, column=0)
+        self.frame_y_data_controls = DataControlFrame(master=self.root, level=level)
+        self.frame_y_data_controls.grid(row=1, column=0)
+        self.button_update = tk.Button(master=self.root, text="Update", width=40, command=self.update)
+        self.button_update.grid(row=2, column=0)
+
+        # Initialise analysis figure
         self.fig = plt.figure(num=1)
         self.ax = plt.axes()
         plt.show(block=False)
-
-        # Initalise widgets
-        self.root = tk.Tk()
-        self.frame_xdatacontrols = DataControlFrame(master=self.root, level=level)
-        self.frame_xdatacontrols.grid(row=0, column=0)
-        self.frame_ydatacontrols = DataControlFrame(master=self.root, level=level)
-        self.frame_ydatacontrols.grid(row=1, column=0)
-        self.button_update = tk.Button(master=self.root, text="Update", width=40, command=self.update)
-        self.button_update.grid(row=2, column=0)
 
         # Run app
         self.root.mainloop()
@@ -51,8 +51,8 @@ class SquadAnalysisGui:
     def update(self):
         """"""
         self._log.debug(msg="'update' method called.")
-        x = self.frame_xdatacontrols.df[self.frame_xdatacontrols.variable_metric.get()]
-        y = self.frame_ydatacontrols.df[self.frame_ydatacontrols.variable_metric.get()]
+        x = self.frame_x_data_controls.df[self.frame_x_data_controls.variable_metric.get()]
+        y = self.frame_y_data_controls.df[self.frame_y_data_controls.variable_metric.get()]
 
         df = pd.merge(x, y, left_index=True, right_index=True)
 
@@ -80,7 +80,7 @@ class DataControlFrame(tk.Frame):
         """
         super().__init__(**kw)
 
-        # Initalise class logger
+        # Initialise class logger
         self._log = logging.getLogger("DataControlFrame")
         self._log.setLevel(level=level)
 
