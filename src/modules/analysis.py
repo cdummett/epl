@@ -34,6 +34,9 @@ class SquadAnalysisGui:
         # Logging message for function call
         self._log.debug(msg="'__init__' method called.")
 
+        # Initialise scraper object
+        self.scraper = FbRefScraper(level=logging.DEBUG)
+
         # Initialise widgets
         self.root = tk.Tk()
         self.x_data_control_frame = DataControlFrame(level=level,
@@ -57,14 +60,26 @@ class SquadAnalysisGui:
         self.ax = plt.axes()
         plt.show(block=False)
 
+        self.update()
+
         # Run app
         self.root.mainloop()
 
     def update(self, *args):
         """"""
-        self._log.debug(msg="'update' method called.")
-        x = self.x_data_control_frame.df[self.x_data_control_frame.metric_menu.variable.get()]
-        y = self.y_data_control_frame.df[self.y_data_control_frame.metric_menu.variable.get()]
+        self._log.debug("'update' method called.")
+
+        x_df = self.scraper.get_squad_summaries(stat=self.x_data_control_frame.stat_menu.variable.get(),
+                                                vs=self.x_data_control_frame.vs_menu.variable.get())
+        if self.x_data_control_frame.metric_menu.values != list(x_df.columns):
+            self.x_data_control_frame.metric_menu.update_values(values=list(x_df.columns))
+        x = x_df[self.x_data_control_frame.metric_menu.variable.get()]
+
+        y_df = self.scraper.get_squad_summaries(stat=self.y_data_control_frame.stat_menu.variable.get(),
+                                                vs=self.y_data_control_frame.vs_menu.variable.get())
+        if self.y_data_control_frame.metric_menu.values != list(y_df.columns):
+            self.y_data_control_frame.metric_menu.update_values(values=list(y_df.columns))
+        y = y_df[self.y_data_control_frame.metric_menu.variable.get()]
 
         df = pd.merge(x, y, left_index=True, right_index=True)
 
@@ -102,50 +117,23 @@ class DataControlFrame(tk.Frame):
         # Logging message for function call
         self._log.debug(msg="'__init__' method called.")
 
-        # Create a scraper object for the data control frame and initialise the data
-        self.scraper = FbRefScraper(level=logging.WARNING)
-        self.df = self.scraper.scrape_squad_summaries(stat='stats', vs='for')
-
         #
         self.stat_menu = MenuFrame(master=self,
                                    level=level,
-                                   values=list(self.scraper.SUMMARY_STAT_OPTS.keys()),
-                                   callback=self.update_metric_menu)
+                                   values=list(FbRefScraper.SUMMARY_STAT_OPTS.keys()),
+                                   callback=callback)
         self.vs_menu = MenuFrame(master=self,
                                  level=level,
                                  values=['for', 'against'],
-                                 callback=self.update_metric_menu)
+                                 callback=callback)
         self.metric_menu = MenuFrame(master=self,
                                      level=level,
-                                     values=list(self.df.columns),
+                                     values=list(["Nope", "Nope"]),
                                      callback=callback)
 
         self.stat_menu.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y)
         self.vs_menu.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
         self.metric_menu.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
-
-    def update_metric_menu(self, *args):
-        """
-        Updates values in the metric OptionMenu widget when the selection in the stat OptionMenu widget is changed.
-
-        Function is called when the value of variable_stat is changed by the user. Function scrapes the dataframe for
-        the newly selected stat and updates the values of optionmenu_widget with the columns of the new dataframe.
-
-        Args:
-            *args: arguments required for callback
-
-        Returns:
-            None
-
-        """
-        # Function logging message
-        self._log.debug(msg="'callback_optionmenu_stat' method called.")
-
-        stat = self.stat_menu.variable.get()
-        vs = self.vs_menu.variable.get()
-
-        self.df = self.scraper.scrape_squad_summaries(stat=stat, vs=vs)
-        self.metric_menu.update_values(values=list(self.df.columns))
 
 
 class MenuFrame(tk.Frame):
