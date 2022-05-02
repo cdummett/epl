@@ -69,14 +69,14 @@ class SquadAnalysisGui:
         """"""
         self._log.debug("'update' method called.")
 
-        x_df = self.scraper.get_squad_summaries(stat=self.x_data_control_frame.stat_menu.variable.get(),
-                                                vs=self.x_data_control_frame.vs_menu.variable.get())
+        x_df = self.scraper.get_summaries(stat=self.x_data_control_frame.stat_menu.variable.get(),
+                                          vs=self.x_data_control_frame.vs_menu.variable.get())
         if self.x_data_control_frame.metric_menu.values != list(x_df.columns):
             self.x_data_control_frame.metric_menu.update_values(values=list(x_df.columns))
         x = x_df[self.x_data_control_frame.metric_menu.variable.get()]
 
-        y_df = self.scraper.get_squad_summaries(stat=self.y_data_control_frame.stat_menu.variable.get(),
-                                                vs=self.y_data_control_frame.vs_menu.variable.get())
+        y_df = self.scraper.get_summaries(stat=self.y_data_control_frame.stat_menu.variable.get(),
+                                          vs=self.y_data_control_frame.vs_menu.variable.get())
         if self.y_data_control_frame.metric_menu.values != list(y_df.columns):
             self.y_data_control_frame.metric_menu.update_values(values=list(y_df.columns))
         y = y_df[self.y_data_control_frame.metric_menu.variable.get()]
