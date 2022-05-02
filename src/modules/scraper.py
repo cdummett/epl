@@ -59,12 +59,13 @@ class FbRefScraper:
         """
         # Logging message for function call
         self._log.debug("'get_squad_summaries' method called.")
-        try:
-            df = self.squad_summaries_dfs[stat][vs]
-        except KeyError:
-            df = self.scrape_squad_summaries(stat=stat, vs=vs)
-            self.squad_summaries_dfs[stat][vs] = df
-        return df
+
+        if stat not in self.squad_summaries_dfs:
+            self.squad_summaries_dfs[stat] = dict()
+        if vs not in self.squad_summaries_dfs[stat]:
+            self.squad_summaries_dfs[stat][vs] = self.scrape_squad_summaries(stat=stat, vs=vs)
+
+        return self.squad_summaries_dfs[stat][vs]
 
     def scrape_squad_codes(self):
         """
