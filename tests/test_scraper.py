@@ -136,8 +136,107 @@ class TestFbRefScraper(unittest.TestCase):
 
         # Check each
         for stat in expected.keys():
-            for vs in (True, False):
+            for vs in ('for', 'against'):
                 self.assertEqual(expected[stat], list(scraper.scrape_squad_summaries(stat=stat, vs=vs).columns))
+
+    def test_scrape_squad_summaries(self):
+        """"""
+
+        expected = {
+            'stats': ['nationality',
+                      'position',
+                      'squad',
+                      'age',
+                      'birth_year',
+                      'games',
+                      'games_starts',
+                      'minutes',
+                      'minutes_90s',
+                      'goals',
+                      'assists',
+                      'goals_pens',
+                      'pens_made',
+                      'pens_att',
+                      'cards_yellow',
+                      'cards_red',
+                      'goals_per90',
+                      'assists_per90',
+                      'goals_assists_per90',
+                      'goals_pens_per90',
+                      'goals_assists_pens_per90',
+                      'xg',
+                      'npxg',
+                      'xa',
+                      'npxg_xa',
+                      'xg_per90',
+                      'xa_per90',
+                      'xg_xa_per90',
+                      'npxg_per90',
+                      'npxg_xa_per90',
+                      'matches'],
+
+            'possession': ['nationality',
+                           'position',
+                           'squad',
+                           'age',
+                           'birth_year',
+                           'minutes_90s',
+                           'touches',
+                           'touches_def_pen_area',
+                           'touches_def_3rd',
+                           'touches_mid_3rd',
+                           'touches_att_3rd',
+                           'touches_att_pen_area',
+                           'touches_live_ball',
+                           'dribbles_completed',
+                           'dribbles',
+                           'dribbles_completed_pct',
+                           'players_dribbled_past',
+                           'nutmegs',
+                           'carries',
+                           'carry_distance',
+                           'carry_progressive_distance',
+                           'progressive_carries',
+                           'carries_into_final_third',
+                           'carries_into_penalty_area',
+                           'miscontrols',
+                           'dispossessed',
+                           'pass_targets',
+                           'passes_received',
+                           'passes_received_pct',
+                           'progressive_passes_received',
+                           'matches'],
+
+            'shooting': ['nationality',
+                         'position',
+                         'squad',
+                         'age',
+                         'birth_year',
+                         'minutes_90s',
+                         'goals',
+                         'shots_total',
+                         'shots_on_target',
+                         'shots_on_target_pct',
+                         'shots_total_per90',
+                         'shots_on_target_per90',
+                         'goals_per_shot',
+                         'goals_per_shot_on_target',
+                         'average_shot_distance',
+                         'shots_free_kicks',
+                         'pens_made',
+                         'pens_att',
+                         'xg',
+                         'npxg',
+                         'npxg_per_shot',
+                         'xg_net',
+                         'npxg_net',
+                         'matches']}
+
+        scraper = FbRefScraper(level=logging.WARNING)
+
+        # Check each
+        for stat in expected.keys():
+            self.assertEqual(expected[stat], list(scraper.scrape_player_summaries(stat=stat).columns))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARNING)

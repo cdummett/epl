@@ -39,6 +39,59 @@ class FbRefScraper:
         self._log.setLevel(level=level)
         self._log.debug(msg="'__init__' method called.")
 
+        # Initialise dataframe dictionaries
+        self._squad_summaries = dict()
+        self._player_summaries = dict()
+
+    def get_squad_summaries(self, stat: str, vs: str):
+        """
+        Recalls a squad summaries dataframe for the specified arguments.
+
+        Function attempts to recall a previously scraped and stored squad summaries dataframe from the objects memory.
+        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
+        it in the objects memory, and then returns the dataframe.
+
+        Args:
+            stat:
+            vs:
+
+        Returns:
+            A pandas dataframe of squad summary information.
+
+        """
+        # Logging message for function call
+        self._log.debug("'get_squad_summaries' method called.")
+
+        if stat not in self._squad_summaries:
+            self._squad_summaries[stat] = dict()
+        if vs not in self._squad_summaries[stat]:
+            self._squad_summaries[stat][vs] = self.scrape_squad_summaries(stat=stat, vs=vs)
+
+        return self._squad_summaries[stat][vs]
+
+    def get_player_summaries(self, stat: str):
+        """
+        Recalls a player summaries dataframe for the specified arguments.
+
+        Function attempts to recall a previously scraped and stored player summaries dataframe from the objects memory.
+        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
+        it in the objects memory, and then returns the dataframe.
+
+        Args:
+            stat:
+
+        Returns:
+            A pandas dataframe of player summary information.
+
+        """
+        # Logging message for function call
+        self._log.debug("'get_squad_summaries' method called.")
+
+        if stat not in self._player_summaries:
+            self._player_summaries[stat] = self.scrape_player_summaries(stat=stat)
+
+        return self._player_summaries[stat]
+
     def scrape_squad_codes(self):
         """
         Scrapes a dictionary mapping squad names to FbRef squad codes.
@@ -134,7 +187,7 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
-    def scrape_squad_summaries(self, stat: str = 'stats', vs: bool = False):
+    def scrape_squad_summaries(self, stat: str = 'stats', vs: str = 'for'):
         """
         Scrapes a dataframe summarising each squads performance metrics for the specified category.
 
@@ -155,12 +208,46 @@ class FbRefScraper:
 
         # Define the url to request from and the html table_id to process, then scrape the table
         url = f"https://fbref.com/en/comps/9/{stat}/Premier-League-Stats"
-        table_id_opts = {False: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_for",
-                         True: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_against"}
-        table = self._scrape_table(url=url, table_id=table_id_opts[vs])
+        table_id = f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_{vs}"
+
+        table = self._scrape_table(url=url, table_id=table_id)
+        df = self._process_table(table=table, index='squad', include_row_header=True)
+
+        new_index = {}
+        if vs == 'against':
+            for label in df.index:
+                new_index[label] = label[3:]
+        df.rename(index=new_index, inplace=True)
 
         # Return a dataframe
-        return self._process_table(table=table, index='squad', include_row_header=True)
+        return df
+
+    def scrape_player_summaries(self, stat: str = 'stats'):
+        """
+        Scrapes a dataframe summarising each players performance metrics for the specified category.
+
+        Function makes a request to a url (e.g. "https://fbref.com/en/comps/9/stats/Premier-League-Stats") which
+        contains the player summaries data for the specified stat category (e.g. 'shooting').
+
+        Args:
+            stat: specifies the category of performance metrics to scrape.
+
+        Returns:
+            A pandas dataframe with player names as the index and performance metrics as the columns.
+
+        """
+        # Logging message for function call
+        self._log.debug("'_scrape_squad_summaries' method called.")
+
+        # Define the url to request from and the html table_id to process, then scrape the table
+        url = f"https://fbref.com/en/comps/9/{stat}/Premier-League-Stats"
+        table_id = f"stats_{self.SUMMARY_STAT_OPTS[stat]}"
+
+        table = self._scrape_table(url=url, table_id=table_id)
+        df = self._process_table(table=table, index='player', include_row_header=False)
+
+        # Return a dataframe
+        return df
 
     def _process_table(self, table, index: str = None, include_row_header: bool = False):
         """"""
