@@ -134,7 +134,7 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
-    def scrape_squad_summaries(self, stat: str = 'stats', vs: bool = False):
+    def scrape_squad_summaries(self, stat: str = 'stats', vs: str = 'for'):
         """
         Scrapes a dataframe summarising each squads performance metrics for the specified category.
 
@@ -155,12 +155,19 @@ class FbRefScraper:
 
         # Define the url to request from and the html table_id to process, then scrape the table
         url = f"https://fbref.com/en/comps/9/{stat}/Premier-League-Stats"
-        table_id_opts = {False: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_for",
-                         True: f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_against"}
-        table = self._scrape_table(url=url, table_id=table_id_opts[vs])
+        table_id = f"stats_squads_{self.SUMMARY_STAT_OPTS[stat]}_{vs}"
+
+        table = self._scrape_table(url=url, table_id=table_id)
+        df = self._process_table(table=table, index='squad', include_row_header=True)
+
+        new_index = {}
+        if vs == 'against':
+            for label in df.index:
+                new_index[label] = label[3:]
+        df.rename(index=new_index, inplace=True)
 
         # Return a dataframe
-        return self._process_table(table=table, index='squad', include_row_header=True)
+        return df
 
     def _process_table(self, table, index: str = None, include_row_header: bool = False):
         """"""

@@ -136,7 +136,7 @@ class TestFbRefScraper(unittest.TestCase):
 
         # Check each
         for stat in expected.keys():
-            for vs in (True, False):
+            for vs in ('for', 'against'):
                 self.assertEqual(expected[stat], list(scraper.scrape_squad_summaries(stat=stat, vs=vs).columns))
 
 if __name__ == '__main__':
