@@ -3,6 +3,7 @@
 
 import logging
 
+import numpy as np
 import pandas as pd
 import tkinter as tk
 
@@ -39,6 +40,23 @@ class SquadAnalysisGui:
 
         # Initialise widgets
         self.root = tk.Tk()
+
+        self.frame_mode = tk.Frame(master=self.root, relief='groove', borderwidth=2)
+        self.variable_mode = tk.StringVar()
+        self.variable_mode.set('squad')
+        self.radio_squad = tk.Radiobutton(master=self.frame_mode,
+                                          text='squad',
+                                          variable=self.variable_mode,
+                                          value='squad',
+                                          command=self.update)
+        self.radio_player = tk.Radiobutton(master=self.frame_mode,
+                                           text='player',
+                                           variable=self.variable_mode,
+                                           value='player',
+                                           command=self.update)
+        self.radio_squad.grid(row=0, column=0)
+        self.radio_player.grid(row=0, column=1)
+
         self.x_data_control_frame = DataControlFrame(level=level,
                                                      master=self.root,
                                                      relief='groove',
@@ -52,8 +70,9 @@ class SquadAnalysisGui:
                                                      callback=self.update)
 
         # Pack data control frame widgets
-        self.x_data_control_frame.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y)
-        self.y_data_control_frame.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.frame_mode.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y, sticky='EW')
+        self.x_data_control_frame.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.y_data_control_frame.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
 
         # Initialise analysis figure
         self.fig = plt.figure(num=1)
@@ -69,22 +88,54 @@ class SquadAnalysisGui:
         """"""
         self._log.debug("'update' method called.")
 
-        x_df = self.scraper.get_summaries(stat=self.x_data_control_frame.stat_menu.variable.get(),
-                                          vs=self.x_data_control_frame.vs_menu.variable.get())
+        mode = self.variable_mode.get()
+
+        x_df = None
+        if mode == "squad":
+            x_df = self.scraper.get_squad_summaries(stat=self.x_data_control_frame.stat_menu.variable.get(),
+                                                    vs=self.x_data_control_frame.vs_menu.variable.get())
+        if mode == "player":
+            x_df = self.scraper.get_player_summaries(stat=self.x_data_control_frame.stat_menu.variable.get())
         if self.x_data_control_frame.metric_menu.values != list(x_df.columns):
             self.x_data_control_frame.metric_menu.update_values(values=list(x_df.columns))
-        x = x_df[self.x_data_control_frame.metric_menu.variable.get()]
+        x = x_df[self.x_data_control_frame.metric_menu.variable.get()].dropna()
+        x.replace('', np.nan, inplace=True)
+        x.dropna(inplace=True)
 
-        y_df = self.scraper.get_summaries(stat=self.y_data_control_frame.stat_menu.variable.get(),
-                                          vs=self.y_data_control_frame.vs_menu.variable.get())
+        y_df = None
+        if mode == "squad":
+            y_df = self.scraper.get_squad_summaries(stat=self.y_data_control_frame.stat_menu.variable.get(),
+                                                    vs=self.y_data_control_frame.vs_menu.variable.get())
+        if mode == "player":
+            y_df = self.scraper.get_player_summaries(stat=self.y_data_control_frame.stat_menu.variable.get())
         if self.y_data_control_frame.metric_menu.values != list(y_df.columns):
             self.y_data_control_frame.metric_menu.update_values(values=list(y_df.columns))
         y = y_df[self.y_data_control_frame.metric_menu.variable.get()]
+        y.replace('', np.nan, inplace=True)
+        y.dropna(inplace=True)
+
+        if mode == "squad":
+            for child in self.x_data_control_frame.vs_menu.winfo_children():
+                child.configure(stat='normal')
+            for child in self.y_data_control_frame.vs_menu.winfo_children():
+                child.configure(stat='normal')
+        if mode == "player":
+            for child in self.x_data_control_frame.vs_menu.winfo_children():
+                child.configure(stat='disable')
+            for child in self.y_data_control_frame.vs_menu.winfo_children():
+                child.configure(stat='disable')
 
         df = pd.merge(x, y, left_index=True, right_index=True)
 
         self.ax.clear()
         plt.scatter(df[df.columns[0]], df[df.columns[1]])
+        if mode == "squad":
+            plt.title("FbRef summary analysis - squads")
+        if mode == "player":
+            plt.title("FbRef summary analysis - players")
+        print(vars(x))
+        plt.xlabel(self.x_data_control_frame.metric_menu.variable.get())
+        plt.ylabel(self.y_data_control_frame.metric_menu.variable.get())
         plt.show(block=False)
 
 
@@ -117,7 +168,6 @@ class DataControlFrame(tk.Frame):
         # Logging message for function call
         self._log.debug(msg="'__init__' method called.")
 
-        #
         self.stat_menu = MenuFrame(master=self,
                                    level=level,
                                    values=list(FbRefScraper.SUMMARY_STAT_OPTS.keys()),
@@ -131,9 +181,9 @@ class DataControlFrame(tk.Frame):
                                      values=list(["Nope", "Nope"]),
                                      callback=callback)
 
-        self.stat_menu.grid(row=0, column=0, padx=self.PAD_X, pady=self.PAD_Y)
-        self.vs_menu.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
-        self.metric_menu.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.stat_menu.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.vs_menu.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
+        self.metric_menu.grid(row=3, column=0, padx=self.PAD_X, pady=self.PAD_Y)
 
 
 class MenuFrame(tk.Frame):
