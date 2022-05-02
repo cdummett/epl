@@ -39,6 +39,31 @@ class FbRefScraper:
         self._log.setLevel(level=level)
         self._log.debug(msg="'__init__' method called.")
 
+        # Initialise dataframe dictionaries
+        self.squad_summaries_dfs = dict()
+
+    def get_squad_summaries(self, stat: str, vs: str):
+        """
+        Recalls a squad_summaries dataframe for the specified arguments.
+
+        Function attempts to recall a previously scraped and stored squad_summaries dataframe from the objects memory.
+        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
+        it in the objects memory, and then returns the dataframe.
+
+        Args:
+            stat:
+            vs:
+
+        Returns:
+
+        """
+        try:
+            df = self.squad_summaries_dfs[stat][vs]
+        except KeyError:
+            df = self.scrape_squad_summaries(stat=stat, vs=vs)
+            self.squad_summaries_dfs[stat][vs] = df
+        return df
+
     def scrape_squad_codes(self):
         """
         Scrapes a dictionary mapping squad names to FbRef squad codes.
