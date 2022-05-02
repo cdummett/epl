@@ -57,6 +57,8 @@ class FbRefScraper:
         Returns:
 
         """
+        # Logging message for function call
+        self._log.debug("'get_squad_summaries' method called.")
         try:
             df = self.squad_summaries_dfs[stat][vs]
         except KeyError:
