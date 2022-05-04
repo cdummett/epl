@@ -95,53 +95,65 @@ class FbRefAnalysisGui:
             None
 
         """
+        # Logging message for function call
         self._log.debug("'update' method called.")
 
-        mode = self._frame_table.variable.get()
-
+        # Clear the axis and initialise the new dataframes
+        self._ax.clear()
         x_df = None
-        if mode == "squad":
+        y_df = None
+
+        # If squad mode selected
+        if self._frame_table.variable.get() == "squad":
+
+            # Recall squad summary dataframes from the cache
             x_df = self._scraper.get_squad_summaries(stat=self._frame_data_x.stat_menu.variable.get(),
                                                      vs=self._frame_data_x.vs_menu.variable.get())
-        if mode == "player":
-            x_df = self._scraper.get_player_summaries(stat=self._frame_data_x.stat_menu.variable.get())
-        if self._frame_data_x.metric_menu.values != list(x_df.columns):
-            self._frame_data_x.metric_menu.update_values(values=list(x_df.columns))
-        x = x_df[self._frame_data_x.metric_menu.variable.get()].dropna()
-        x.replace('', np.nan, inplace=True)
-        x.dropna(inplace=True)
-
-        y_df = None
-        if mode == "squad":
             y_df = self._scraper.get_squad_summaries(stat=self._frame_data_y.stat_menu.variable.get(),
                                                      vs=self._frame_data_y.vs_menu.variable.get())
-        if mode == "player":
+
+            # Enable child widgets in vs_menu widget
+            for child in self._frame_data_x.vs_menu.winfo_children():
+                child.configure(stat='normal')
+            for child in self._frame_data_y.vs_menu.winfo_children():
+                child.configure(stat='normal')
+
+            # Update plot title
+            plt.title("FbRef summary analysis - squads")
+
+        # If player mode selected
+        if self._frame_table.variable.get() == "player":
+
+            # Recall player summary dataframes from the cache
+            x_df = self._scraper.get_player_summaries(stat=self._frame_data_x.stat_menu.variable.get())
             y_df = self._scraper.get_player_summaries(stat=self._frame_data_y.stat_menu.variable.get())
+
+            # Disable child widgets in vs_menu widget
+            for child in self._frame_data_x.vs_menu.winfo_children():
+                child.configure(stat='disable')
+            for child in self._frame_data_y.vs_menu.winfo_children():
+                child.configure(stat='disable')
+
+            # Update plot title
+            plt.title("FbRef summary analysis - players")
+
+        # Update menu widget values if required
+        if self._frame_data_x.metric_menu.values != list(x_df.columns):
+            self._frame_data_x.metric_menu.update_values(values=list(x_df.columns))
         if self._frame_data_y.metric_menu.values != list(y_df.columns):
             self._frame_data_y.metric_menu.update_values(values=list(y_df.columns))
+
+        # Clean x_df and y_df by dropping columns with blanks or NaN values then merge the dataframes
+        x = x_df[self._frame_data_x.metric_menu.variable.get()]
+        x.replace('', np.nan, inplace=True)
+        x.dropna(inplace=True)
         y = y_df[self._frame_data_y.metric_menu.variable.get()]
         y.replace('', np.nan, inplace=True)
         y.dropna(inplace=True)
-
-        if mode == "squad":
-            for child in self._frame_data_x.vs_menu.winfo_children():
-                child.configure(stat='normal')
-            for child in self._frame_data_y.vs_menu.winfo_children():
-                child.configure(stat='normal')
-        if mode == "player":
-            for child in self._frame_data_x.vs_menu.winfo_children():
-                child.configure(stat='disable')
-            for child in self._frame_data_y.vs_menu.winfo_children():
-                child.configure(stat='disable')
-
         df = pd.merge(x, y, left_index=True, right_index=True)
 
-        self._ax.clear()
+        # Update the plot
         plt.scatter(df[df.columns[0]], df[df.columns[1]])
-        if mode == "squad":
-            plt.title("FbRef summary analysis - squads")
-        if mode == "player":
-            plt.title("FbRef summary analysis - players")
         plt.xlabel(self._frame_data_x.metric_menu.variable.get())
         plt.ylabel(self._frame_data_y.metric_menu.variable.get())
         plt.show(block=False)
