@@ -1,6 +1,14 @@
-"""
+"""Module contains classes for building a tkinter application for visualising FbRef summary data.
+
+Classes:
+    FbRefApplication:
+    TableControlFrame: Custom tkinter Frame widget with controls for selecting whether to display squad or player data.
+    DataControlFrame: Custom tkinter Frame widget with controls for selecting data for a specific axis.
+    MenuControlFrame: Custom tkinter Frame widget with controls for selecting an option from a menu.
+
 """
 
+# Import dependencies
 import logging
 
 import numpy as np
@@ -12,11 +20,11 @@ from modules.scraper import FbRefScraper
 from matplotlib import pyplot as plt
 
 
-class FbRefAnalysisGui:
-    """ tkinter application for analysing summary data scraped from https://fbref.com/en/.
+class FbRefApplication:
+    """tkinter application for analysing summary data scraped from https://fbref.com/en/.
 
     Application allows user to select between data for squad and player summaries across a range of categories and
-     metrics. Data is scraped, processed, and cached for quick access by an instance of the FbRefScraper.
+    metrics. Data is scraped, processed, and cached for quick access by an instance of the FbRefScraper.
 
     Attributes:
         _log: logger object for the class
@@ -253,24 +261,24 @@ class DataControlFrame(tk.Frame):
         self._log.debug(msg="'__init__' method called.")
 
         # Initialise and pack widgets using grid
-        self.stat_menu = MenuFrame(master=self,
-                                   level=level,
-                                   values=list(FbRefScraper.SUMMARY_STAT_OPTS.keys()),
-                                   _callback=_callback)
-        self.vs_menu = MenuFrame(master=self,
-                                 level=level,
-                                 values=['for', 'against'],
-                                 _callback=_callback)
-        self.metric_menu = MenuFrame(master=self,
-                                     level=level,
-                                     values=list(["Nope", "Nope"]),
-                                     _callback=_callback)
+        self.stat_menu = MenuControlFrame(master=self,
+                                          level=level,
+                                          values=list(FbRefScraper.SUMMARY_STAT_OPTS.keys()),
+                                          _callback=_callback)
+        self.vs_menu = MenuControlFrame(master=self,
+                                        level=level,
+                                        values=['for', 'against'],
+                                        _callback=_callback)
+        self.metric_menu = MenuControlFrame(master=self,
+                                            level=level,
+                                            values=list(["Nope", "Nope"]),
+                                            _callback=_callback)
         self.stat_menu.grid(row=1, column=0, padx=self.PAD_X, pady=self.PAD_Y)
         self.vs_menu.grid(row=2, column=0, padx=self.PAD_X, pady=self.PAD_Y)
         self.metric_menu.grid(row=3, column=0, padx=self.PAD_X, pady=self.PAD_Y)
 
 
-class MenuFrame(tk.Frame):
+class MenuControlFrame(tk.Frame):
     """Custom tkinter Frame widget for selecting a value through a menu or cycling through values with buttons.
 
         Subclass of the tkinter Frame class with prepacked widgets for selecting a value from a list of values. Options
@@ -389,4 +397,4 @@ class MenuFrame(tk.Frame):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
-    app = FbRefAnalysisGui(level=logging.DEBUG)
+    app = FbRefApplication(level=logging.DEBUG)
