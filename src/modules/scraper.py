@@ -43,55 +43,6 @@ class FbRefScraper:
         self._squad_summaries = dict()
         self._player_summaries = dict()
 
-    def get_squad_summaries(self, stat: str, vs: str):
-        """
-        Recalls a squad summaries dataframe for the specified arguments.
-
-        Function attempts to recall a previously scraped and stored squad summaries dataframe from the objects memory.
-        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
-        it in the objects memory, and then returns the dataframe.
-
-        Args:
-            stat:
-            vs:
-
-        Returns:
-            A pandas dataframe of squad summary information.
-
-        """
-        # Logging message for function call
-        self._log.debug("'get_squad_summaries' method called.")
-
-        if stat not in self._squad_summaries:
-            self._squad_summaries[stat] = dict()
-        if vs not in self._squad_summaries[stat]:
-            self._squad_summaries[stat][vs] = self.scrape_squad_summaries(stat=stat, vs=vs)
-
-        return self._squad_summaries[stat][vs]
-
-    def get_player_summaries(self, stat: str):
-        """
-        Recalls a player summaries dataframe for the specified arguments.
-
-        Function attempts to recall a previously scraped and stored player summaries dataframe from the objects memory.
-        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
-        it in the objects memory, and then returns the dataframe.
-
-        Args:
-            stat:
-
-        Returns:
-            A pandas dataframe of player summary information.
-
-        """
-        # Logging message for function call
-        self._log.debug("'get_squad_summaries' method called.")
-
-        if stat not in self._player_summaries:
-            self._player_summaries[stat] = self.scrape_player_summaries(stat=stat)
-
-        return self._player_summaries[stat]
-
     def scrape_squad_codes(self):
         """
         Scrapes a dictionary mapping squad names to FbRef squad codes.
@@ -153,39 +104,54 @@ class FbRefScraper:
         # Return a dictionary
         return player_codes
 
-    def _scrape_table(self, url: str, table_id: str):
+    def get_squad_summaries(self, stat: str, vs: str):
         """
-        Scrapes the specified table from the specified url.
+        Recalls a squad summaries dataframe for the specified arguments.
 
-        Function makes a request to the specified url, coverts the html response into a BeautifulSoup object, parses
-        through each table in the soup until a match is found.
+        Function attempts to recall a previously scraped and stored squad summaries dataframe from the objects memory.
+        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
+        it in the objects memory, and then returns the dataframe.
 
         Args:
-            url:
-            table_id:
+            stat:
+            vs:
 
         Returns:
-            A BeautifulSoup object containing the html data for the specified table.
-
-        Raises:
-            ValueError: If no table with an id matching table_id can be found.
+            A pandas dataframe of squad summary information.
 
         """
-        self._log.debug("'scrape_table' method called.")
+        # Logging message for function call
+        self._log.debug("'get_squad_summaries' method called.")
 
-        res = requests.get(url)
-        comm = re.compile("<!--|-->")
-        soup = BeautifulSoup(comm.sub("", res.text), 'lxml')
-        all_tables = soup.find_all('table')
+        if stat not in self._squad_summaries:
+            self._squad_summaries[stat] = dict()
+        if vs not in self._squad_summaries[stat]:
+            self._squad_summaries[stat][vs] = self.scrape_squad_summaries(stat=stat, vs=vs)
 
-        for table in all_tables:
-            if 'id' not in table.attrs:
-                continue
-            if table['id'] == table_id:
-                return table
+        return self._squad_summaries[stat][vs]
 
-        error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
-        raise ValueError(error_msg)
+    def get_player_summaries(self, stat: str):
+        """
+        Recalls a player summaries dataframe for the specified arguments.
+
+        Function attempts to recall a previously scraped and stored player summaries dataframe from the objects memory.
+        If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
+        it in the objects memory, and then returns the dataframe.
+
+        Args:
+            stat:
+
+        Returns:
+            A pandas dataframe of player summary information.
+
+        """
+        # Logging message for function call
+        self._log.debug("'get_squad_summaries' method called.")
+
+        if stat not in self._player_summaries:
+            self._player_summaries[stat] = self.scrape_player_summaries(stat=stat)
+
+        return self._player_summaries[stat]
 
     def scrape_squad_summaries(self, stat: str = 'stats', vs: str = 'for'):
         """
@@ -248,6 +214,40 @@ class FbRefScraper:
 
         # Return a dataframe
         return df
+
+    def _scrape_table(self, url: str, table_id: str):
+        """
+        Scrapes the specified table from the specified url.
+
+        Function makes a request to the specified url, coverts the html response into a BeautifulSoup object, parses
+        through each table in the soup until a match is found.
+
+        Args:
+            url:
+            table_id:
+
+        Returns:
+            A BeautifulSoup object containing the html data for the specified table.
+
+        Raises:
+            ValueError: If no table with an id matching table_id can be found.
+
+        """
+        self._log.debug("'scrape_table' method called.")
+
+        res = requests.get(url)
+        comm = re.compile("<!--|-->")
+        soup = BeautifulSoup(comm.sub("", res.text), 'lxml')
+        all_tables = soup.find_all('table')
+
+        for table in all_tables:
+            if 'id' not in table.attrs:
+                continue
+            if table['id'] == table_id:
+                return table
+
+        error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
+        raise ValueError(error_msg)
 
     def _process_table(self, table, index: str = None, include_row_header: bool = False):
         """"""
