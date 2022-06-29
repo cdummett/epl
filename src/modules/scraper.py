@@ -26,8 +26,7 @@ class FbRefScraper:
                          'misc': 'misc'}
 
     def __init__(self, level=logging.WARNING):
-        """
-        Creates an instance of the FbRefScraper class.
+        """Creates an instance of the FbRefScraper class.
 
         Function initialises an instance of the class by creating a logger matching the class name and setting the log
         level at the specified level.
@@ -44,8 +43,7 @@ class FbRefScraper:
         self._player_summaries = dict()
 
     def scrape_squad_codes(self):
-        """
-        Scrapes a dictionary mapping squad names to FbRef squad codes.
+        """Scrapes a dictionary mapping squad names to FbRef squad codes.
 
         Function makes a request to the url "https://fbref.com/en/comps/9/stats/Premier-League-Stats" and processes the
         "Squad Standard Stats" table into a dictionary with squad names as keys and squad codes as values. Squad codes
@@ -74,8 +72,7 @@ class FbRefScraper:
         return squad_codes
 
     def scrape_player_codes(self):
-        """
-        Scrapes a dictionary mapping player names to FbRef player codes.
+        """Scrapes a dictionary mapping player names to FbRef player codes.
 
         Function makes a request to the url "https://fbref.com/en/comps/9/stats/Premier-League-Stats" and processes the
         "Player Standard Stats" table into a dictionary with player names as keys and player codes as values. Player
@@ -105,8 +102,7 @@ class FbRefScraper:
         return player_codes
 
     def get_squad_summaries(self, stat: str, vs: str):
-        """
-        Recalls a squad summaries dataframe for the specified arguments.
+        """Recalls a squad summaries dataframe for the specified arguments.
 
         Function attempts to recall a previously scraped and stored squad summaries dataframe from the objects memory.
         If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
@@ -131,8 +127,7 @@ class FbRefScraper:
         return self._squad_summaries[stat][vs]
 
     def get_player_summaries(self, stat: str):
-        """
-        Recalls a player summaries dataframe for the specified arguments.
+        """Recalls a player summaries dataframe for the specified arguments.
 
         Function attempts to recall a previously scraped and stored player summaries dataframe from the objects memory.
         If the dataframe for the specified arguments does not exist, the function instead scrapes the dataframe, stores
@@ -154,8 +149,7 @@ class FbRefScraper:
         return self._player_summaries[stat]
 
     def scrape_squad_summaries(self, stat: str = 'stats', vs: str = 'for'):
-        """
-        Scrapes a dataframe summarising each squads performance metrics for the specified category.
+        """Scrapes a dataframe summarising each squads performance metrics for the specified category.
 
         Function makes a request to a url (e.g. "https://fbref.com/en/comps/9/stats/Premier-League-Stats") which
         contains the squad summaries data for the specified stat category (e.g. 'shooting'). The table containing either
@@ -189,8 +183,7 @@ class FbRefScraper:
         return df
 
     def scrape_player_summaries(self, stat: str = 'stats'):
-        """
-        Scrapes a dataframe summarising each players performance metrics for the specified category.
+        """Scrapes a dataframe summarising each players performance metrics for the specified category.
 
         Function makes a request to a url (e.g. "https://fbref.com/en/comps/9/stats/Premier-League-Stats") which
         contains the player summaries data for the specified stat category (e.g. 'shooting').
@@ -216,8 +209,7 @@ class FbRefScraper:
         return df
 
     def _scrape_table(self, url: str, table_id: str):
-        """
-        Scrapes the specified table from the specified url.
+        """Scrapes the specified table from the specified url.
 
         Function makes a request to the specified url, coverts the html response into a BeautifulSoup object, parses
         through each table in the soup until a match is found.
@@ -249,8 +241,20 @@ class FbRefScraper:
         error_msg = f"Invalid argument 'table_id'. A table with id '{table_id}' was not found in any table tag."
         raise ValueError(error_msg)
 
-    def _process_table(self, table, index: str = None, include_row_header: bool = False):
-        """"""
+    def _process_table(self, table, index: str = None, include_row_header: bool = False) -> pd.DataFrame:
+        """Process a html table tag into a pandas dataframe object.
+
+        Function loops through all table rows in a table and then all table data in a table row, inserting the datapoint
+        into a data dictionary. The dictionary is converted into a pandas dataframe and returned.
+
+        Args:
+            table ():
+            index (str):
+            include_row_header (bool):
+
+        Returns:
+            pd.DataFrame:
+        """
         self._log.debug("'_process_data' method called.")
 
         data_dict = dict()
